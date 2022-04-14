@@ -21,15 +21,19 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Adds bin results to already compressed
-    Add(Add),
     /// Compress bin folder to csv
     Compress(Compress),
+    /// Restore bins from table and assembly
+    Restore(Restore),
 }
 #[derive(Args)]
-struct Add {
-    folder: Option<String>,
-    name: Option<String>,
+struct Restore {
+    table: String,
+    assembly: String,
+    /// Path to output file,
+    /// will create if not present or append
+    #[clap(short, long,default_value_t = String::from("bins.csv.gz"))]
+    output: String,
     #[clap(short, long)]
     verbose: bool,
 }
@@ -80,11 +84,11 @@ fn folder2list(folder: &str) -> Vec<Row> {
         Err(_) => panic!("Cant open folder {}", folder)
     };
 
-
+    let name: String = Path::new(folder).file_name().unwrap().to_str().unwrap().into();
     for path in paths {
         let p = path.unwrap();
         // This cant be the best way to get the folder name
-        let name: String = p.path().parent().unwrap().file_name().unwrap().to_str().unwrap().into();
+        //let name: String = p.path().parent().unwrap().file_name().unwrap().to_str().unwrap().into();
         let filename: String = p.file_name().into_string().unwrap();
         let ids: Vec<String> = get_fasta_ids(p.path());
         for id in ids.iter(){
@@ -138,8 +142,8 @@ fn main() {
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level cmd
     match &cli.command {
-        Commands::Add(args) => {
-            println!("'myapp add' was used, name is: {:?}", args.name)
+        Commands::Restore(args) => {
+            println!("'myapp add' was used, name is: {:?}", args.table)
         }
         Commands::Compress(args) => {
             println!("Summarising bin files in file {:?}", args.output);
