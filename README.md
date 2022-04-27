@@ -11,6 +11,21 @@ Bincompress is a small rust cli that can compress folders of bins
 into a single table and later restore the bins from the assembly.
 
 
+## Install
+
+its a rust project so make sure cargo is installed then run:
+
+```
+git clone https://github.com/openpaul/bincompress
+cd bincompress
+cargo build -r
+```
+
+The binary `bincompress` can the be found in:
+
+`target/release/bincompress`
+
+
 ## Compress
 ```
 bincompress compress binner1_bins binner2_bins
