@@ -28,7 +28,8 @@ The project is small enough that complete rewrites should be possible.
 
 Feel free to suggest massive changes if you want.
 
-### Known Issues
+### Known Issues/Todo
 - No tests
 - No validation of input data
+- No validation of successfull restore
 - No documentation
