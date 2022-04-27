@@ -1,7 +1,6 @@
-use std::io::{self, BufRead, BufReader, BufWriter, Write};
+use std::io::{BufReader};
 use log::{info, trace, warn};
-use std::io::prelude::*;
-use std::path::{Path,PathBuf};
+use std::path::{Path};
 use std::fs;
 use flate2::read::GzDecoder;
 use std::fs::File;

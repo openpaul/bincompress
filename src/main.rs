@@ -36,6 +36,7 @@ struct Restore {
 #[derive(Args)]
 struct Compress {
     /// Path to binfolder
+    #[clap(required = true)]
     folder: Vec<String>,
     /// Path to output file,
     /// will create if not present or append
