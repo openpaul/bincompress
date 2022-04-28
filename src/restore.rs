@@ -32,7 +32,7 @@ fn table2list(table: &str) -> HashMap<String,Vec<String>>{
         let p = Path::new(binner).join(bin.to_string().clone()).to_str().unwrap().to_string();
 
         // create vector if not exists in HashMap
-        if !hm.contains_key(&p){
+        if !hm.contains_key(&contig){
             hm.insert(contig.clone(), Vec::new());
         }
         hm.get_mut(&contig).unwrap().push(p.clone());
