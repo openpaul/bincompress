@@ -36,6 +36,18 @@ bincompress compress binner1_bins binner2_bins
 bincompress restore bins.csv.gz assembly.fasta 
 ```
 
+
+## Test
+
+Test compression with the simulated data by running:
+
+```
+cargo run -- compress test_data/simulation/bins/binner_{1,2,3,4}  \
+-o test_data/simulation/bins.csv.gz
+```
+After you should be able to restore it using:
+
+
 ## Issues
 
 I am learning Rust so the tool will have many issues. 
@@ -44,7 +56,9 @@ The project is small enough that complete rewrites should be possible.
 Feel free to suggest massive changes if you want.
 
 ### Known Issues/Todo
+- Does not retain order of contigs
 - No tests
 - No validation of input data
 - No validation of successfull restore
 - No documentation
+- The tool should work with JSON rather than CSV tbh
