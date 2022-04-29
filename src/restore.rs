@@ -5,10 +5,11 @@ use std::fs;
 use flate2::read::GzDecoder;
 use std::fs::File;
 use crate::base;
-pub use base::Row;
+pub use base::Binner;
 use csv::Reader;
 use std::collections::HashMap;
 use bio::io::fasta;
+use serde_json;
 
 fn table2list(table: &str) -> HashMap<String,Vec<String>>{
     // HashMap storing the association between contigs
@@ -41,20 +42,77 @@ fn table2list(table: &str) -> HashMap<String,Vec<String>>{
 }
 
 
-fn create_outfolder(folder: &str, bin: &str){
-    let path = Path::new(folder).join(bin);
-    let prefix = path.parent().unwrap();
-    if !prefix.exists(){
+fn create_outfolder(folder: &str, binner: &str){
+    let path = Path::new(folder).join(binner);
+    if !path.exists(){
         log::info!("Creating dirs");
-        fs::create_dir_all(prefix).expect("Could not create output folder");
+        fs::create_dir_all(path).expect("Could not create output folder");
     }
 }
 
-pub fn decompress(table: &str, outfolder: &str, assembly: &str){
+fn binner_from_json(infile: &str) -> Vec<Binner>{
+    let file = File::open(infile).unwrap();
+    let reader = BufReader::new(GzDecoder::new(file));
+    let json = serde_json::from_reader(reader);
+    return json.unwrap()
+}
+
+pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
     log::info!("Restoring bins");
     // define a HashMap [contig] --> [(binner, bin), (binner, bin)]
     // For fast iteration over assembly
-    let contigs = table2list(table);
+    //let contigs = table2list(table);
+    let binners = binner_from_json(infile);
+    // iterate binners and create 
+    // bins from saved information
+    // To retain order of contigs
+    // We need to either use random indexing
+    // or iterate the assembly multiple times
+    // We assume that no index is present, and we dont 
+    // want to store DNA in memory
+    // Thus we need to iterate several times
+    for binner in binners.iter(){
+        log::info!("Restoring bins: {}", &binner.name);
+        create_outfolder(outfolder, &binner.name);
+        
+        // for each bin
+        for bin in binner.bins.iter(){
+            log::info!("Restoring bins: {}", &bin.name);
+
+            let mut contigs = HashMap::new();
+
+            let reader = fasta::Reader::from_file(assembly).unwrap();
+            for result in reader.records() {
+                let record = result.expect("Error during fasta record parsing");
+                if bin.contigs.contains(&record.id().to_string()){
+                    contigs.insert(record.id().to_string(), record);
+                }
+            }
+
+            // now that all seq are in memory
+            let path = Path::new(outfolder).join(&binner.name).join(&bin.name);
+            let display = path.display();
+
+            let mut file = match File::create(&path) {
+                Err(why) => panic!("couldn't open {}: {}", display, why),
+                Ok(file) => file,
+            };
+
+            // write to fasta
+            let mut wrtr = fasta::Writer::new(file);
+            for contig in bin.contigs.iter(){
+
+                if contigs.contains_key(contig){
+                    wrtr.write_record(contigs.get(contig).unwrap())
+                            .ok()
+                            .expect("Could not write record");
+                }
+            }
+
+        }
+
+    }
+    /*
 
     // open all bin output files
     // Use a HashMap to have [(binner, bin)] --> output file
@@ -98,4 +156,5 @@ pub fn decompress(table: &str, outfolder: &str, assembly: &str){
     // could have a hashsum check implementation as well
     // That would be a nice addition
 
+    */
 }

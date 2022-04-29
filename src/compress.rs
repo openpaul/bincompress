@@ -1,14 +1,19 @@
 use log::{info, trace, warn};
 use std::fs;
-use std::path::PathBuf;
-use std::path::Path;
-use bio::io::fasta;
-use std::io::{BufWriter, Write};
-use flate2::write;
-use flate2::Compression;
+use std::path::{PathBuf,Path};
 use std::ffi::OsStr;
 use std::fs::File;
+use std::io::{BufWriter, Write};
+use bio::io::fasta;
+use flate2::write;
+use flate2::Compression;
+//use serde::{Serialize, Deserialize};
+use serde_json;
+
+
 use crate::base;
+pub use base::Binner;
+pub use base::Bin;
 pub use base::Row;
 
 fn get_fasta_ids(file: PathBuf) -> Vec<String>{
@@ -23,28 +28,55 @@ fn get_fasta_ids(file: PathBuf) -> Vec<String>{
     ids
 }
 
-
-pub fn folder2list(folder: &str) -> Vec<Row> {
-    let mut r: Vec<Row> = Vec::new();
-    // accepts a folder 
-    // returns a iterator (foldername, bin, contig)
+fn get_bins(folder: &str) -> fs::ReadDir {
     let paths = match fs::read_dir(folder){
         Ok(files) => files,
         Err(_) => panic!("Cant open folder {}", folder)
     };
+    return paths
+}
 
-    let name: String = Path::new(folder).file_name().unwrap().to_str().unwrap().into();
-    for path in paths {
-        let p = path.unwrap();
-        // This cant be the best way to get the folder name
-        //let name: String = p.path().parent().unwrap().file_name().unwrap().to_str().unwrap().into();
+pub fn bins_from_folder(folder: &str) -> Binner {
+    let  mut bins: Vec<Bin> = Vec::new();
+    let path = Path::new(folder);
+    let binner_name: String = path.file_name().unwrap().to_str().unwrap().into();
+    let mut binner = Binner{name : binner_name.clone(),
+                    bins: bins};
+
+    for bin in get_bins(folder){
+
+        let p = bin.unwrap();
         let filename: String = p.file_name().into_string().unwrap();
         let ids: Vec<String> = get_fasta_ids(p.path());
-        for id in ids.iter(){
-            r.push(Row{contig: id.clone(), bin: filename.clone(), binner: name.clone()})
-        }
+        let b = Bin{
+            name: filename.clone(),
+            checksum: filename.clone(),
+            contigs: ids,
+            binner: binner_name.clone(),
+        };
+        binner.bins.push(b);
     }
-    r
+    return binner
+}
+
+
+pub fn add_bins(parent: Vec<Bin>, add: &Vec<Bin>) -> Vec<Bin> {
+    let mut parent_keys: Vec<String> = Vec::new();
+    for bin in parent.iter() {
+        parent_keys.push(bin.id());
+    }
+    //add.retain(|&x| !parent_keys.contains(&x.id()));
+
+    return parent
+}
+
+pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool){
+    let mut ap: bool = *append;
+    if *append == true && Path::new(outfile).exists() == false {
+        ap = false;
+    }
+    let mut writer_file = writer(outfile, ap);
+    serde_json::to_writer(writer_file, &values).unwrap();
 }
 
 
@@ -70,17 +102,5 @@ pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
         ))
     } else {
         Box::new(BufWriter::with_capacity(128 * 1024, file))
-    }
-}
-pub fn write_to_file(outfile: &str, values: &Vec<Vec<Row>>, append: &bool){
-    let mut ap: bool = *append;
-    if *append == true && Path::new(outfile).exists() == false {
-        ap = false;
-    }
-    let mut writer_file = writer(outfile, ap);
-    for contigs in values.iter(){
-        for v in contigs.iter() {
-            writer_file.write(v.test().as_bytes()).unwrap();
-        }
     }
 }

@@ -5,7 +5,7 @@ mod restore;
 mod compress;
 
 mod base;
-pub use base::Row;
+pub use base::Binner;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -61,12 +61,26 @@ fn main() {
         }
         Commands::Compress(args) => {
             log::info!("Compressing bins");
-            let mut bins: Vec<Vec<Row>> = Vec::new();
+            // create new binners object
+            // in the future this could be populated with saved results
+            let mut binners: Vec<Binner> = Vec::new();
+            // add all bins for each bin folder
             for folder in args.folder.iter(){
-                let contigs: Vec<Row> = compress::folder2list(&folder);
-                bins.push(contigs);
+                let new_bins = compress::bins_from_folder(&folder);
+                // check if we have the binner already saved, to not 
+                // have conflicts
+                let mut add = true;
+                for b in binners.iter(){
+                    if &b.name == &new_bins.name {
+                        add = false;
+                        log::warn!("Binner already in output, not adding again");
+                    }
+                }
+                if add {
+                    binners.push(new_bins);
+                }
             }
-            compress::write_to_file(&args.output, &bins, &args.append);
+            compress::write_json(&args.output, binners, &args.append);
         }
     }
 }
