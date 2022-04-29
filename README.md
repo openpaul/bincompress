@@ -33,7 +33,7 @@ bincompress compress binner1_bins binner2_bins
 
 ## Restore 
 ```
-bincompress restore bins.csv.gz assembly.fasta 
+bincompress restore bins.json.gz assembly.fasta 
 ```
 
 
@@ -43,7 +43,7 @@ Test compression with the simulated data by running:
 
 ```
 cargo run -- compress test_data/simulation/bins/binner_{1,2,3,4}  \
--o test_data/simulation/bins.csv.gz
+-o test_data/simulation/bins.json.gz
 ```
 After you should be able to restore it using:
 
@@ -56,9 +56,9 @@ The project is small enough that complete rewrites should be possible.
 Feel free to suggest massive changes if you want.
 
 ### Known Issues/Todo
-- Does not retain order of contigs
 - No tests
 - No validation of input data
 - No validation of successfull restore
 - No documentation
-- The tool should work with JSON rather than CSV tbh
+- The tool should work with JSON [Done, now using json]
+- Does not retain order of contigs [It does now]

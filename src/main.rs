@@ -40,7 +40,7 @@ struct Compress {
     folder: Vec<String>,
     /// Path to output file,
     /// will create if not present or append
-    #[clap(short, long,default_value_t = String::from("bins.csv.gz"))]
+    #[clap(short, long,default_value_t = String::from("bins.json.gz"))]
     output: String,
     #[clap(short, long)]
     /// Append to exsting table
