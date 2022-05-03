@@ -101,14 +101,12 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
             // write to fasta
             let mut wrtr = fasta::Writer::new(file);
             for contig in bin.contigs.iter(){
-
                 if contigs.contains_key(contig){
-                    wrtr.write_record(contigs.get(contig).unwrap())
-                            .ok()
-                            .expect("Could not write record");
+                    wrtr.write_record_width(contigs.get(contig).unwrap(), 50)
+                        .ok()
+                        .expect("Could not write record");
                 }
             }
-
         }
 
     }

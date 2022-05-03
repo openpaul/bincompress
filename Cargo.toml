@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 clap = { version = "3.1.8", features = ["derive", "unstable-multicall"] }
-bio = {version = "0.41"}
+bio = {version = "0.41", path = "/home/paul/software/rust-bio"}
 flate2 = {version = "1.0"}
 simple_logger = "2.1"
 csv = "1.1"
