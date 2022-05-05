@@ -10,6 +10,7 @@ use csv::Reader;
 use std::collections::HashMap;
 use bio::io::fasta;
 use serde_json;
+pub use base::{checksum256,get_width};
 
 
 fn create_outfolder(folder: &str, binner: &str){
@@ -71,11 +72,20 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
             let mut wrtr = fasta::Writer::new(file);
             for contig in bin.contigs.iter(){
                 if contigs.contains_key(contig){
-                    wrtr.write_record_width(contigs.get(contig).unwrap(), 50)
+                    wrtr.write_record_width(contigs.get(contig).unwrap(), bin.width)
                         .ok()
                         .expect("Could not write record");
                 }
             }
+            drop(wrtr); // closing file before checksum computation
+
+            let checksum = checksum256(&path).unwrap();
+            if checksum != bin.checksum {
+                log::warn!("Restored file is not the same");
+                panic!("Stopping");
+            }
+
+
         }
 
     }
