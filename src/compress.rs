@@ -1,21 +1,27 @@
 use log::{info, trace, warn};
 use std::fs;
+use std::str;
 //use std::path::{PathBuf,Path};
 use camino::{Utf8PathBuf,Utf8Path};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::io;
 use bio::io::fasta;
 use flate2::write;
 use flate2::Compression;
 //use serde::{Serialize, Deserialize};
 use serde_json;
+//use checksums::{hash_file,Algorithm};
+use std::io::Error;
+use sha2::{Sha256, Sha512, Digest};
 
 
 use crate::base;
 pub use base::Binner;
 pub use base::Bin;
 pub use base::Row;
+
 
 fn get_fasta_ids(file: Utf8PathBuf) -> Vec<String>{
     let mut ids: Vec<String> = Vec::new();
@@ -37,6 +43,15 @@ fn get_bins(folder: &str) -> fs::ReadDir {
     return paths
 }
 
+fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
+    let mut file = File::open(path)?;
+    let mut sha256 = Sha256::new();
+    io::copy(&mut file, &mut sha256)?;
+    let hex: String = format!("{:X}", sha256.finalize());
+    return Ok(hex)
+}
+
+
 pub fn bins_from_folder(folder: &str) -> Binner {
     let bins: Vec<Bin> = Vec::new();
     let path = Utf8Path::new(folder);
@@ -47,11 +62,21 @@ pub fn bins_from_folder(folder: &str) -> Binner {
     for bin in get_bins(folder){
 
         let p = Utf8PathBuf::from_path_buf(bin.unwrap().path()).unwrap();
+
+        log::info!("Building checksum");
+        /*
+        let mut file = File::open(&p).unwrap();
+        let mut sha256 = Sha256::new();
+        io::copy(&mut file, &mut sha256).unwrap();
+        let hex: String = format!("{:X}", sha256.finalize());
+        */
+        let hex = checksum256(&p).unwrap();
+
         let filename: String = p.file_name().unwrap().into();
         let ids: Vec<String> = get_fasta_ids(p);
         let b = Bin{
             name: filename.clone(),
-            checksum: filename.clone(),
+            checksum: hex,
             contigs: ids,
             binner: binner_name.clone(),
         };
@@ -59,7 +84,6 @@ pub fn bins_from_folder(folder: &str) -> Binner {
     }
     return binner
 }
-
 
 pub fn add_bins(parent: Vec<Bin>, add: &Vec<Bin>) -> Vec<Bin> {
     let mut parent_keys: Vec<String> = Vec::new();
