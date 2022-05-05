@@ -11,36 +11,6 @@ use std::collections::HashMap;
 use bio::io::fasta;
 use serde_json;
 
-fn table2list(table: &str) -> HashMap<String,Vec<String>>{
-    // HashMap storing the association between contigs
-    // and bins
-    let mut hm: HashMap<String,Vec<String>> = HashMap::new();
-
-    // open gzipped csv file
-    let file = File::open(table).unwrap();
-    let reader = BufReader::new(GzDecoder::new(file));
-    let mut rdr = Reader::from_reader(reader);
-    // iterate csv
-    for result in rdr.records() {
-
-        // extract csv fields
-        let record = result.unwrap();
-        let contig = record.get(1).unwrap().to_string();
-        let bin = record.get(2).unwrap();
-        let binner = record.get(0).unwrap();
-
-        // construct rel path of bin
-        let p = Utf8Path::new(binner).join(bin.to_string().clone()).to_string();
-
-        // create vector if not exists in HashMap
-        if !hm.contains_key(&contig){
-            hm.insert(contig.clone(), Vec::new());
-        }
-        hm.get_mut(&contig).unwrap().push(p.clone());
-    }
-    return hm
-}
-
 
 fn create_outfolder(folder: &str, binner: &str){
     let path = Utf8Path::new(folder).join(binner);
