@@ -1,6 +1,7 @@
 use log::{info, trace, warn};
 use std::fs;
-use std::path::{PathBuf,Path};
+//use std::path::{PathBuf,Path};
+use camino::{Utf8PathBuf,Utf8Path};
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -16,7 +17,7 @@ pub use base::Binner;
 pub use base::Bin;
 pub use base::Row;
 
-fn get_fasta_ids(file: PathBuf) -> Vec<String>{
+fn get_fasta_ids(file: Utf8PathBuf) -> Vec<String>{
     let mut ids: Vec<String> = Vec::new();
     //let file = file.into_os_string().into_string().unwrap();
     let reader = fasta::Reader::from_file(file).unwrap();
@@ -37,17 +38,17 @@ fn get_bins(folder: &str) -> fs::ReadDir {
 }
 
 pub fn bins_from_folder(folder: &str) -> Binner {
-    let  mut bins: Vec<Bin> = Vec::new();
-    let path = Path::new(folder);
-    let binner_name: String = path.file_name().unwrap().to_str().unwrap().into();
+    let bins: Vec<Bin> = Vec::new();
+    let path = Utf8Path::new(folder);
+    let binner_name: String = path.file_name().unwrap().into();
     let mut binner = Binner{name : binner_name.clone(),
                     bins: bins};
 
     for bin in get_bins(folder){
 
-        let p = bin.unwrap();
-        let filename: String = p.file_name().into_string().unwrap();
-        let ids: Vec<String> = get_fasta_ids(p.path());
+        let p = Utf8PathBuf::from_path_buf(bin.unwrap().path()).unwrap();
+        let filename: String = p.file_name().unwrap().into();
+        let ids: Vec<String> = get_fasta_ids(p);
         let b = Bin{
             name: filename.clone(),
             checksum: filename.clone(),
@@ -72,7 +73,7 @@ pub fn add_bins(parent: Vec<Bin>, add: &Vec<Bin>) -> Vec<Bin> {
 
 pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool){
     let mut ap: bool = *append;
-    if *append == true && Path::new(outfile).exists() == false {
+    if *append == true && Utf8Path::new(outfile).exists() == false {
         ap = false;
     }
     let mut writer_file = writer(outfile, ap);
@@ -81,20 +82,20 @@ pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool){
 
 
 pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
-    let path = Path::new(filename);
+    let path = Utf8Path::new(filename);
     // opejn file object in append or new mode
     let file = match append {
         true =>match File::options().append(append).open(path) {
-                Err(why) => panic!("couldn't open {}: {:?}", path.display(), why),
+                Err(why) => panic!("couldn't open {}: {:?}", path, why),
                 Ok(file) => file,
                 },
         false => match File::create(&path){
-                Err(why) => panic!("couldn't open {}: {:?}", path.display(), why),
+                Err(why) => panic!("couldn't open {}: {:?}", path, why),
                 Ok(file) => file,
                 },
     };
 
-    if path.extension() == Some(OsStr::new("gz")) {
+    if path.extension() == Some("gz") {
         // Error is here: Created file isn't gzip-compressed
         Box::new(BufWriter::with_capacity(
             128 * 1024,
