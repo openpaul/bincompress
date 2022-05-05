@@ -1,6 +1,6 @@
 use std::io::{BufReader};
 use log::{info, trace, warn};
-use std::path::{Path};
+use camino::{Utf8PathBuf,Utf8Path};
 use std::fs;
 use flate2::read::GzDecoder;
 use std::fs::File;
@@ -30,7 +30,7 @@ fn table2list(table: &str) -> HashMap<String,Vec<String>>{
         let binner = record.get(0).unwrap();
 
         // construct rel path of bin
-        let p = Path::new(binner).join(bin.to_string().clone()).to_str().unwrap().to_string();
+        let p = Utf8Path::new(binner).join(bin.to_string().clone()).to_string();
 
         // create vector if not exists in HashMap
         if !hm.contains_key(&contig){
@@ -43,7 +43,7 @@ fn table2list(table: &str) -> HashMap<String,Vec<String>>{
 
 
 fn create_outfolder(folder: &str, binner: &str){
-    let path = Path::new(folder).join(binner);
+    let path = Utf8Path::new(folder).join(binner);
     if !path.exists(){
         log::info!("Creating dirs");
         fs::create_dir_all(path).expect("Could not create output folder");
@@ -74,7 +74,7 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
     for binner in binners.iter(){
         log::info!("Restoring bins: {}", &binner.name);
         create_outfolder(outfolder, &binner.name);
-        
+
         // for each bin
         for bin in binner.bins.iter(){
             log::info!("Restoring bins: {}", &bin.name);
@@ -90,11 +90,10 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
             }
 
             // now that all seq are in memory
-            let path = Path::new(outfolder).join(&binner.name).join(&bin.name);
-            let display = path.display();
+            let path = Utf8Path::new(outfolder).join(&binner.name).join(&bin.name);
 
-            let mut file = match File::create(&path) {
-                Err(why) => panic!("couldn't open {}: {}", display, why),
+            let file = match File::create(&path) {
+                Err(why) => panic!("couldn't open {}: {}", path, why),
                 Ok(file) => file,
             };
 
@@ -110,49 +109,4 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
         }
 
     }
-    /*
-
-    // open all bin output files
-    // Use a HashMap to have [(binner, bin)] --> output file
-    let mut bins = HashMap::new();
-    for (contig, inbins) in &contigs {
-        for bin in inbins.iter(){
-            if !bins.contains_key(bin){
-                create_outfolder(outfolder, bin);
-                let path = Path::new(outfolder).join(bin);
-                let display = path.display();
-
-                let mut file = match File::create(&path) {
-                    Err(why) => panic!("couldn't open {}: {}", display, why),
-                    Ok(file) => file,
-                };
-                let wrtr = fasta::Writer::new(file);
-                bins.insert(bin.to_string(), wrtr);
-            }
-        }
-    }
-
-    // iterate assembly and fetch suitable output file name from 
-    let reader = fasta::Reader::from_file(assembly).unwrap();
-    for result in reader.records() {
-        let record = result.expect("Error during fasta record parsing");
-        if !contigs.contains_key(record.id()){
-            continue
-        }
-
-        let bns =  contigs.get(record.id()).unwrap();
-        for bn in bns.iter(){
-            bins.get_mut(bn)
-                .expect("Could not get bin fasta writer")
-                .write_record(&record)
-                .ok()
-                .expect("Could not write record");
-        }
-
-    }
-
-    // could have a hashsum check implementation as well
-    // That would be a nice addition
-
-    */
 }
