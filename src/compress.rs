@@ -76,14 +76,14 @@ pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool){
     if *append == true && Utf8Path::new(outfile).exists() == false {
         ap = false;
     }
-    let mut writer_file = writer(outfile, ap);
+    let writer_file = writer(outfile, ap);
     serde_json::to_writer(writer_file, &values).unwrap();
 }
 
 
 pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
     let path = Utf8Path::new(filename);
-    // opejn file object in append or new mode
+    // open file object in append or new mode
     let file = match append {
         true =>match File::options().append(append).open(path) {
                 Err(why) => panic!("couldn't open {}: {:?}", path, why),
