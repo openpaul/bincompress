@@ -67,3 +67,53 @@ pub fn get_width(path: &Utf8PathBuf) -> Result<usize,Error> {
     }
     Ok(width)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempdir::TempDir;
+    use std::fs;
+    use std::io;
+
+    const BIN_A: &str = ">Contig_1
+AGCTACGACATACG
+GTACGACT
+AAAAAAAAAAAAAAAAAAAA
+>Contig_2
+AGGTTTTTTTGG
+>Contig_3
+AGATGACTAAAA
+ATGGTTTTTTTTTTTT
+";
+
+    #[test]
+    fn t_checksum256(){
+        let tmp_dir = TempDir::new("fasta").unwrap();
+        let file_path = tmp_dir.path().join("binA.fasta");
+        fs::write(&file_path, BIN_A).expect("Unable to write file"); 
+
+        let cs = checksum256(&Utf8PathBuf::from_path_buf(file_path).unwrap())
+                .expect("Could not compute checksu:");
+        let expected = "667910636B177485DF8DB1C426A9FA2A243003FD44022E7BB485791EA1081041";
+        assert_eq!(expected, cs);
+    }
+
+    #[test]
+    #[should_panic]
+    fn t_checksum256_missing_file(){
+        let file_path = Utf8PathBuf::from("missing.fasta");
+        let cs = checksum256(&file_path).unwrap();
+    }
+
+    #[test]
+    fn t_get_width(){
+        let tmp_dir = TempDir::new("fasta").unwrap();
+        let file_path = tmp_dir.path().join("binA.fasta");
+        fs::write(&file_path, BIN_A).expect("Unable to write file"); 
+
+        let cs = get_width(&Utf8PathBuf::from_path_buf(file_path).unwrap())
+                .expect("Could not compute width");
+        let expected = 20;
+        assert_eq!(expected, cs);
+    }
+}

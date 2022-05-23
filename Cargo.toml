@@ -17,3 +17,5 @@ serde = "1"
 serde_json = "1"
 camino = "1.0"
 sha2 = "0.10"
+[dev-dependencies]
+tempdir= "0.3.7"
