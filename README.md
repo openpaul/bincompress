@@ -13,7 +13,7 @@ into a single table and later restore the bins from the assembly.
 
 ## Install
 
-its a rust project so make sure cargo is installed then run:
+Its a rust project so make sure cargo is installed then run:
 
 ```
 git clone https://github.com/openpaul/bincompress
@@ -39,6 +39,8 @@ bincompress restore bins.json.gz assembly.fasta
 
 ## Test
 
+You can create simulated bins using the python notebook. 
+
 Test compression with the simulated data by running:
 
 ```
@@ -56,9 +58,9 @@ The project is small enough that complete rewrites should be possible.
 Feel free to suggest massive changes if you want.
 
 ### Known Issues/Todo
-- No tests
+- No tests [In progress]
 - No validation of input data
-- No validation of successfull restore
+- No validation of successfull restore [Done, using sha256]
 - No documentation
 - The tool should work with JSON [Done, now using json]
 - Does not retain order of contigs [It does now]
