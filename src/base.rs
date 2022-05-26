@@ -1,25 +1,20 @@
 use std::fs::File;
-use std::io;
-use camino::{Utf8PathBuf,Utf8Path};
-use std::io::{BufWriter, Write,BufReader};
+use camino::{Utf8PathBuf};
+use std::io::{BufReader};
 use std::io::BufRead;
 use std::io::Error;
-use sha2::{Sha256, Sha512, Digest};
+use sha2::{Sha256, Digest};
 use serde::{Deserialize, Serialize};
+
 #[derive(Debug)]
 pub struct Row {
     pub contig: String,
     pub bin: String,
     pub binner: String
 }
-impl Row{
-    pub fn test(&self)-> String{
-        format!("{},{},{}\n", self.binner, self.contig, self.bin)
-    }
 
-}
 #[derive(Debug, Deserialize, Serialize)]
-pub struct folders {
+pub struct Folders {
     pub name: String,
     pub bins: Vec<Bin>
 }
@@ -39,16 +34,12 @@ pub struct Bin {
     pub width: usize,
 }
 
-impl Bin {
-    pub fn id(&self) -> String {
-        format!("{}/{}",self.binner, self.name)
-    }
-}
 
+// Compute sha256 hashsum
 pub fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
     let mut file = File::open(path)?;
     let mut sha256 = Sha256::new();
-    io::copy(&mut file, &mut sha256)?;
+    std::io::copy(&mut file, &mut sha256)?;
     let hex: String = format!("{:X}", sha256.finalize());
     return Ok(hex)
 }
@@ -73,7 +64,6 @@ mod tests {
     use super::*;
     use tempdir::TempDir;
     use std::fs;
-    use std::io;
 
     const BIN_A: &str = ">Contig_1
 AGCTACGACATACG
@@ -102,7 +92,7 @@ ATGGTTTTTTTTTTTT
     #[should_panic]
     fn t_checksum256_missing_file(){
         let file_path = Utf8PathBuf::from("missing.fasta");
-        let cs = checksum256(&file_path).unwrap();
+        checksum256(&file_path).unwrap();
     }
 
     #[test]

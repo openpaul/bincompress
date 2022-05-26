@@ -1,12 +1,11 @@
 use std::io::{BufReader};
-use log::{info, trace, warn};
-use camino::{Utf8PathBuf,Utf8Path};
+//use log::{info, trace, warn};
+use camino::{Utf8Path};
 use std::fs;
 use flate2::read::GzDecoder;
 use std::fs::File;
 use crate::base;
 pub use base::Binner;
-use csv::Reader;
 use std::collections::HashMap;
 use bio::io::fasta;
 use serde_json;
