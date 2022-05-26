@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand,Args};
 //use log::{info, trace, warn};
 use simple_logger::SimpleLogger;
+use camino::{Utf8PathBuf};
 mod restore;
 mod compress;
 
@@ -66,7 +67,8 @@ fn main() {
             let mut binners: Vec<Binner> = Vec::new();
             // add all bins for each bin folder
             for folder in args.folder.iter(){
-                let new_bins = compress::bins_from_folder(&folder).unwrap();
+                let f =  Utf8PathBuf::from(folder);
+                let new_bins = compress::bins_from_folder(&f).unwrap();
                 // check if we have the binner already saved, to not 
                 // have conflicts
                 let mut add = true;

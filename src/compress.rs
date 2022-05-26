@@ -29,7 +29,7 @@ fn get_fasta_ids(file: &Utf8PathBuf) -> Result<Vec<String>, Box<dyn Error>>{
     Ok(ids)
 }
 
-pub fn bins_from_folder(folder: &str) -> Result<Binner,Box<dyn Error>> {
+pub fn bins_from_folder(folder: &Utf8PathBuf) -> Result<Binner,Box<dyn Error>> {
     let bins: Vec<Bin> = Vec::new();
     let path = Utf8Path::new(folder);
     let binner_name: String = path.file_name().unwrap().into();
@@ -100,6 +100,7 @@ pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
 mod tests {
     use super::*;
     use tempdir::TempDir;
+    use std::path::PathBuf;
     use std::fs;
 
     const BIN_A: &str = ">Contig_1
@@ -123,6 +124,26 @@ ATGGTTTTTTTTTTTT
                 .expect("Could not get fasta ids");
         let expected = vec!["Contig_1", "Contig_2", "Contig_3"];
         assert_eq!(expected, ids);
+    }
+
+    #[test]
+    fn t_bins(){
+        let filename = "binA.fasta";
+        let tmp_dir = TempDir::new("fasta").unwrap();
+        let file_path = tmp_dir.path().join(filename);
+        fs::write(&file_path, BIN_A).expect("Unable to write file"); 
+
+        // complicated casting of path types
+        let path = PathBuf::from(tmp_dir.path());
+        let folder = Utf8PathBuf::from_path_buf(path).unwrap();
+        let binner = bins_from_folder(&folder)
+                .expect("Could not get bins");
+        let v = binner.bins[0].clone();
+        let expected_ids = vec!["Contig_1", "Contig_2", "Contig_3"];
+
+        assert_eq!(v.name, filename);
+        assert_eq!(v.width, 20);
+        assert_eq!(v.contigs, expected_ids);
     }
 
 }
