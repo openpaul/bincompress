@@ -29,11 +29,6 @@ fn get_fasta_ids(file: &Utf8PathBuf) -> Result<Vec<String>, Box<dyn Error>>{
     Ok(ids)
 }
 
-fn get_bins(folder: &str) -> Result<fs::ReadDir,Box<dyn Error>>  {
-    Ok(fs::read_dir(folder)?)
-}
-
-
 pub fn bins_from_folder(folder: &str) -> Result<Binner,Box<dyn Error>> {
     let bins: Vec<Bin> = Vec::new();
     let path = Utf8Path::new(folder);
@@ -41,7 +36,7 @@ pub fn bins_from_folder(folder: &str) -> Result<Binner,Box<dyn Error>> {
     let mut binner = Binner{name : binner_name.clone(),
                             bins: bins};
 
-    for bin in get_bins(folder)
+    for bin in fs::read_dir(folder)
             .expect("Could not get bins for folder"){
 
         let p = Utf8PathBuf::from_path_buf(bin.unwrap().path()).unwrap();
