@@ -5,8 +5,8 @@ use camino::{Utf8PathBuf};
 mod restore;
 mod compress;
 
-mod base;
-pub use base::Binner;
+mod lib;
+pub use lib::Binner;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]

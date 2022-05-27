@@ -4,12 +4,12 @@ use camino::{Utf8Path};
 use std::fs;
 use flate2::read::GzDecoder;
 use std::fs::File;
-use crate::base;
-pub use base::Binner;
+use crate::lib;
+pub use lib::Binner;
 use std::collections::HashMap;
 use bio::io::fasta;
 use serde_json;
-pub use base::{checksum256,get_width};
+pub use lib::{checksum256,get_width};
 
 
 fn create_outfolder(folder: &str, binner: &str){

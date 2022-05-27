@@ -11,10 +11,10 @@ use serde_json;
 use std::error::Error;
 
 
-use crate::base;
-pub use base::Binner;
-pub use base::Bin;
-pub use base::{checksum256, get_width};
+use crate::lib;
+pub use lib::Binner;
+pub use lib::Bin;
+pub use lib::{checksum256, get_width};
 
 
 fn get_fasta_ids(file: &Utf8PathBuf) -> Result<Vec<String>, Box<dyn Error>>{
