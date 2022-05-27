@@ -8,7 +8,22 @@ In reality the binning information is easily removed from the bins and
 together with the assembly bins can be recreated.
 
 Bincompress is a small rust cli that can compress folders of bins
-into a single table and later restore the bins from the assembly.
+into a single JSON file and later restore the bins from the assembly.
+
+Restoration is correct to the last bit.
+
+
+## Assumptions
+
+The assumption is that the fasta files have consitent line-lengths within each file.
+You can not use this on fastas with the sequence in a single line. Although this
+is valid fasta format, it is not supported. 
+This is due to the way we support checksumming and need to restore the file
+correctly again.
+
+
+Assembly and binner do not need to have the same line lengths, but need
+to have the same contig names.
 
 
 ## Install
