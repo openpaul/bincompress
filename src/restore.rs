@@ -1,49 +1,44 @@
-use std::io::{BufReader};
-//use log::{info, trace, warn};
-use camino::{Utf8Path};
 use std::fs;
-use flate2::read::GzDecoder;
+use std::io::{BufReader};
+use std::io::Error;
 use std::fs::File;
-use crate::lib;
-pub use lib::Binner;
+use serde_json;
+use camino::{Utf8Path};
+use flate2::read::GzDecoder;
 use std::collections::HashMap;
 use bio::io::fasta;
-use serde_json;
+
+use crate::lib;
+pub use lib::Binner;
 pub use lib::{checksum256,get_width};
 
 
-fn create_outfolder(folder: &str, binner: &str){
+fn create_outfolder(folder: &str, binner: &str) -> Result<bool, Box<Error>> {
     let path = Utf8Path::new(folder).join(binner);
     if !path.exists(){
         log::info!("Creating dirs");
         fs::create_dir_all(path).expect("Could not create output folder");
     }
+    Ok(true)
 }
 
-fn binner_from_json(infile: &str) -> Vec<Binner>{
-    let file = File::open(infile).unwrap();
+fn binner_from_json(infile: &str) -> Result<Vec<Binner>, Box<Error>>{
+    let file = File::open(infile)?;
     let reader = BufReader::new(GzDecoder::new(file));
     let json = serde_json::from_reader(reader);
-    return json.unwrap()
+    Ok(json.unwrap())
 }
 
 pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
     log::info!("Restoring bins");
-    // define a HashMap [contig] --> [(binner, bin), (binner, bin)]
-    // For fast iteration over assembly
-    //let contigs = table2list(table);
-    let binners = binner_from_json(infile);
-    // iterate binners and create 
-    // bins from saved information
-    // To retain order of contigs
-    // We need to either use random indexing
-    // or iterate the assembly multiple times
-    // We assume that no index is present, and we dont 
-    // want to store DNA in memory
-    // Thus we need to iterate several times
+
+    let binners = binner_from_json(infile)
+                    .expect("Could not load from JSON");
+
     for binner in binners.iter(){
         log::info!("Restoring bins: {}", &binner.name);
-        create_outfolder(outfolder, &binner.name);
+        create_outfolder(outfolder, &binner.name)
+            .expect("Could not create output folder");
 
         // for each bin
         for bin in binner.bins.iter(){
