@@ -6,18 +6,6 @@ use std::io::Error;
 use sha2::{Sha256, Digest};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
-pub struct Row {
-    pub contig: String,
-    pub bin: String,
-    pub binner: String
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Folders {
-    pub name: String,
-    pub bins: Vec<Bin>
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Binner {
