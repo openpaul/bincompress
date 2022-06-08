@@ -46,15 +46,14 @@ fn iterate_assembly(reader: impl io::Read, bin: &Bin) -> Result<HashMap<String, 
 
 fn assembly_wrapper(assembly: &str, bin: &Bin) -> Result<HashMap<String, bio::io::fasta::Record>, Box<Error>>{
     let assembly_path: &Utf8Path = Utf8Path::new(assembly);
+    let f = File::open(assembly_path).unwrap();
+    let buf = 1024*8;
     if let Some("gz") = assembly_path.extension() {
-        let f = File::open(assembly_path).unwrap();
         let f = GzDecoder::new(f);
-        let f = BufReader::with_capacity(1024*8, f);
+        let f = BufReader::with_capacity(buf, f);
         return iterate_assembly(f, bin)
-
     }else{
-        let f = File::open(assembly_path).unwrap();
-        let f = BufReader::with_capacity(1024*8, f);
+        let f = BufReader::with_capacity(buf, f);
         return iterate_assembly(f, bin)
     }
 }
