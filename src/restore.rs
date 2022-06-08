@@ -1,6 +1,7 @@
 use std::fs;
-use std::io::{BufReader};
+use std::io::{BufReader,Read,BufRead};
 use std::io::Error;
+use std::io;
 use std::fs::File;
 use serde_json;
 use camino::{Utf8Path};
@@ -9,7 +10,7 @@ use std::collections::HashMap;
 use bio::io::fasta;
 
 use crate::lib;
-pub use lib::Binner;
+pub use lib::{Binner,Bin};
 pub use lib::{checksum256,get_width};
 
 
@@ -29,11 +30,43 @@ fn binner_from_json(infile: &str) -> Result<Vec<Binner>, Box<Error>>{
     Ok(json.unwrap())
 }
 
+
+fn iterate_assembly(reader: impl io::Read, bin: &Bin) -> Result<HashMap<String, bio::io::fasta::Record>, Box<Error>>{ 
+    let r = fasta::Reader::new(reader);
+    let mut contigs = HashMap::new();
+
+    for result in r.records() {
+        let record = result.expect("Error during fasta record parsing");
+        if bin.contigs.contains(&record.id().to_string()){
+            contigs.insert(record.id().to_string(), record);
+        }
+    }
+    Ok(contigs)
+}
+
+fn assembly_wrapper(assembly: &str, bin: &Bin) -> Result<HashMap<String, bio::io::fasta::Record>, Box<Error>>{
+    let assembly_path: &Utf8Path = Utf8Path::new(assembly);
+    if let Some("gz") = assembly_path.extension() {
+        let f = File::open(assembly_path).unwrap();
+        let f = GzDecoder::new(f);
+        let f = BufReader::with_capacity(1024*8, f);
+        return iterate_assembly(f, bin)
+
+    }else{
+        let f = File::open(assembly_path).unwrap();
+        let f = BufReader::with_capacity(1024*8, f);
+        return iterate_assembly(f, bin)
+    }
+}
+
+
+
 pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
     log::info!("Restoring bins");
 
     let binners = binner_from_json(infile)
                     .expect("Could not load from JSON");
+
 
     for binner in binners.iter(){
         log::info!("Restoring bins: {}", &binner.name);
@@ -44,15 +77,9 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
         for bin in binner.bins.iter(){
             log::info!("Restoring bins: {}", &bin.name);
 
-            let mut contigs = HashMap::new();
 
-            let reader = fasta::Reader::from_file(assembly).unwrap();
-            for result in reader.records() {
-                let record = result.expect("Error during fasta record parsing");
-                if bin.contigs.contains(&record.id().to_string()){
-                    contigs.insert(record.id().to_string(), record);
-                }
-            }
+            // Load contigs from Assembly
+            let contigs = assembly_wrapper(assembly, &bin).unwrap();
 
             // now that all seq are in memory
             let path = Utf8Path::new(outfolder).join(&binner.name).join(&bin.name);

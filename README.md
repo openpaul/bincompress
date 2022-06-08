@@ -79,3 +79,4 @@ Feel free to suggest massive changes if you want.
 - No documentation
 - The tool should work with JSON [Done, now using json]
 - Does not retain order of contigs [It does now]
+- Allow Gzipped assemblies [Works, but needs improvement as its very slow]
