@@ -79,10 +79,10 @@ The project is small enough that complete rewrites should be possible.
 Feel free to suggest massive changes if you want.
 
 ### Known Issues/Todo
-- No tests [In progress]
+- Few tests [In progress]
 - No validation of input data
-- No validation of successfull restore [Done, using sha256]
-- No documentation
-- The tool should work with JSON [Done, now using json]
-- Does not retain order of contigs [It does now]
-- Allow Gzipped assemblies [Works, but needs improvement as its very slow]
+- Limited documentation
+- ~~The tool should work with JSON~~ [Done, now using json]
+- ~~Does not retain order of contigs~~ [It does now]
+- ~~Allow Gzipped assemblies~~ [Works, but needs improvement as its very slow]
+- ~~No validation of successfull restore~~ [Done, using sha256]
