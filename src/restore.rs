@@ -8,6 +8,7 @@ use camino::{Utf8Path};
 use flate2::read::GzDecoder;
 use std::collections::HashMap;
 use bio::io::fasta;
+use rayon::prelude::*;
 
 use crate::lib;
 pub use lib::{Binner,Bin};
@@ -58,6 +59,37 @@ fn assembly_wrapper(assembly: &str, bin: &Bin) -> Result<HashMap<String, bio::io
     }
 }
 
+fn restore_bin(bin: &Bin, binner: &String, assembly: &str, outfolder: &str) -> Result<(), ()> {
+    log::info!("Restoring bins: {}", &bin.name);
+    // Load contigs from Assembly
+    let contigs = assembly_wrapper(assembly, &bin).unwrap();
+
+    // now that all seq are in memory
+    let path = Utf8Path::new(outfolder).join(binner).join(&bin.name);
+
+    let file = match File::create(&path) {
+        Err(why) => panic!("couldn't open {}: {}", path, why),
+        Ok(file) => file,
+    };
+
+    // write to fasta
+    let mut wrtr = fasta::Writer::new(file);
+    for contig in bin.contigs.iter(){
+        if contigs.contains_key(contig){
+            wrtr.write_record_width(contigs.get(contig).unwrap(), bin.width)
+                .ok()
+                .expect("Could not write record");
+        }
+    }
+    drop(wrtr); // closing file before checksum computation
+
+    let checksum = checksum256(&path).unwrap();
+    if checksum != bin.checksum {
+        log::warn!("Restored file is not the same");
+        panic!("Stopping");
+    }
+    Ok(())
+}
 
 
 pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
@@ -73,40 +105,9 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
             .expect("Could not create output folder");
 
         // for each bin
-        for bin in binner.bins.iter(){
-            log::info!("Restoring bins: {}", &bin.name);
-
-
-            // Load contigs from Assembly
-            let contigs = assembly_wrapper(assembly, &bin).unwrap();
-
-            // now that all seq are in memory
-            let path = Utf8Path::new(outfolder).join(&binner.name).join(&bin.name);
-
-            let file = match File::create(&path) {
-                Err(why) => panic!("couldn't open {}: {}", path, why),
-                Ok(file) => file,
-            };
-
-            // write to fasta
-            let mut wrtr = fasta::Writer::new(file);
-            for contig in bin.contigs.iter(){
-                if contigs.contains_key(contig){
-                    wrtr.write_record_width(contigs.get(contig).unwrap(), bin.width)
-                        .ok()
-                        .expect("Could not write record");
-                }
-            }
-            drop(wrtr); // closing file before checksum computation
-
-            let checksum = checksum256(&path).unwrap();
-            if checksum != bin.checksum {
-                log::warn!("Restored file is not the same");
-                panic!("Stopping");
-            }
-
-
-        }
-
+        let b: Vec<()> = binner.bins.par_iter()
+            .map(|bin| restore_bin(bin, &binner.name, assembly, outfolder)
+                .expect("Bin was not restored")
+            ).collect();
     }
 }
