@@ -23,7 +23,13 @@ pub struct Bin {
 }
 
 
-// Compute sha256 hashsum
+/// Function to compute sha256 hash on a file
+///
+/// Returns a result type with the hex digest of the 
+/// sha256 hash.
+///
+/// Arguments:
+/// * `path`: UTF8PathBuf pointing to the input
 pub fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
     let mut file = File::open(path)?;
     let mut sha256 = Sha256::new();
@@ -32,6 +38,14 @@ pub fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
     return Ok(hex)
 }
 
+/// Compute line-length (width) of FASTA file
+///
+/// Computes the width of a given FASTA file as a usize.
+/// It does not validate the input. Output is only valid
+/// for valid FASTA files.
+///
+/// Arguments:
+/// * `path`: UTF8PathBuf pointing to the input
 pub fn get_width(path: &Utf8PathBuf) -> Result<usize,Error> {
     let mut width = 0;
     let file = File::open(path)?;
