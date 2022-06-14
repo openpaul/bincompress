@@ -82,7 +82,8 @@ Feel free to suggest massive changes if you want.
 - Few tests [In progress]
 - No validation of input data
 - Limited documentation
-- ~~The tool should work with JSON~~ [Done, now using json]
+- Not published on crates.io [Intentional, not ready for release]
+- ~~The tool should produce JSON not CSV output~~ [Done, now using json]
 - ~~Does not retain order of contigs~~ [It does now]
 - ~~Allow Gzipped assemblies~~ [Works, but needs improvement as its very slow]
 - ~~No validation of successfull restore~~ [Done, using sha256]
