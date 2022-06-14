@@ -59,10 +59,16 @@ You can create simulated bins using the python notebook.
 Test compression with the simulated data by running:
 
 ```
-cargo run -- compress test_data/simulation/bins/binner_{1,2,3,4}  \
--o test_data/simulation/bins.json.gz
+bincompress compress test_data/simulation/bins/binner_{1,2,3,4}  \
+   -o test_data/simulation/bins.json.gz
 ```
 After you should be able to restore it using:
+
+```
+bincompress restore test_data/simulation/bins.json.gz \
+  test_data/simulation/assembly.fasta \
+  -o test_data/simulation/restore
+```
 
 
 ## Issues
