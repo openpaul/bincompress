@@ -53,8 +53,7 @@ fn main() {
     let cli = Cli::parse();
     SimpleLogger::new().with_colors(true).init().unwrap();
 
-    // You can check for the existence of subcommands, and if found use their
-    // matches just as you would the top level cmd
+    // Execute subcommand
     match &cli.command {
         Commands::Restore(args) => {
             log::info!("Restoring compressed bins");
