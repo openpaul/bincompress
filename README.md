@@ -7,10 +7,15 @@ be a large amount of data.
 In reality the binning information is easily removed from the bins and
 together with the assembly bins can be recreated.
 
-Bincompress is a small rust cli that can compress folders of bins
-into a single JSON file and later restore the bins from the assembly.
+Bincompress is a small rust cli that extracts the binning information
+from folders of bins
+into a single JSON file. Later the bin FASTA files can be
+restored from the assembly FASTA.
 
 Restoration is correct to the last bit.
+
+Thus instead of storing the FASTA files of all binners in addition to the assembly, 
+only the assembly with the clustering information needs to be stored.
 
 
 ## Assumptions
