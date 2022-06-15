@@ -1,4 +1,3 @@
-//use log::{info, trace, warn};
 use std::fs;
 use std::str;
 use camino::{Utf8PathBuf,Utf8Path};
@@ -11,7 +10,6 @@ use serde_json;
 use std::error::Error;
 use rayon::prelude::*;
 
-
 use crate::lib;
 pub use lib::Binner;
 pub use lib::Bin;
@@ -19,8 +17,6 @@ pub use lib::{checksum256, get_width};
 
 
 fn get_fasta_ids(file: &Utf8PathBuf) -> Result<Vec<String>, Box<dyn Error>>{
-    let mut ids: Vec<String> = Vec::new();
-    //let file = file.into_os_string().into_string().unwrap();
     let reader = fasta::Reader::from_file(file)?;
     let ids: Vec<String> = reader.records()
             .map(|x| x.expect("Error during fasta record parsing")
@@ -47,7 +43,6 @@ fn compress_bin(path: &Utf8PathBuf, binner_name: &String) -> Result<Bin,Box<dyn 
 }
 
 pub fn bins_from_folder(folder: &Utf8PathBuf) -> Result<Binner,Box<dyn Error>> {
-    //let bins: Vec<Bin> = Vec::new();
     let path = Utf8Path::new(folder);
     let binner_name: String = path.file_name().unwrap().into();
     let bin_paths: Vec<Utf8PathBuf> = fs::read_dir(folder).expect("")
@@ -60,30 +55,9 @@ pub fn bins_from_folder(folder: &Utf8PathBuf) -> Result<Binner,Box<dyn Error>> {
             .collect();
 
 
-    let mut binner = Binner{name : binner_name.clone(),
+    let binner = Binner{name : binner_name.clone(),
                             bins: bins};
 
-    /*
-    for bin in fs::read_dir(folder)
-            .expect("Could not get bins for folder"){
-
-        let p = Utf8PathBuf::from_path_buf(bin.unwrap().path()).unwrap();
-
-        let width = get_width(&p).unwrap();
-        log::info!("Building checksum");
-        let hex = checksum256(&p).unwrap();
-
-        let filename: String = p.file_name().unwrap().into();
-        let ids: Vec<String> = get_fasta_ids(&p).unwrap();
-        let b = Bin{
-            name: filename.clone(),
-            checksum: hex,
-            contigs: ids,
-            binner: binner_name.clone(),
-            width: width
-        };
-        binner.bins.push(b);
-    }*/
     return Ok(binner)
 }
 
