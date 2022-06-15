@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::{BufReader,Read,BufRead};
+use std::io::{BufReader};
 use std::io::Error;
 use std::io;
 use std::fs::File;
@@ -105,9 +105,9 @@ pub fn decompress(infile: &str, outfolder: &str, assembly: &str){
             .expect("Could not create output folder");
 
         // for each bin
-        let b: Vec<()> = binner.bins.par_iter()
+        binner.bins.par_iter()
             .map(|bin| restore_bin(bin, &binner.name, assembly, outfolder)
                 .expect("Bin was not restored")
-            ).collect();
+            ).collect::<Vec<()>>();
     }
 }
