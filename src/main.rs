@@ -62,27 +62,7 @@ fn main() {
         }
         Commands::Compress(args) => {
             log::info!("Compressing bins");
-            // create new binners object
-            // in the future this could be populated with saved results
-            let mut binners: Vec<Binner> = Vec::new();
-            // add all bins for each bin folder
-            for folder in args.folder.iter(){
-                let f =  Utf8PathBuf::from(folder);
-                let new_bins = compress::bins_from_folder(&f).unwrap();
-                // check if we have the binner already saved, to not 
-                // have conflicts
-                let mut add = true;
-                for b in binners.iter(){
-                    if &b.name == &new_bins.name {
-                        add = false;
-                        log::warn!("Binner already in output, not adding again");
-                    }
-                }
-                if add {
-                    binners.push(new_bins);
-                }
-            }
-            compress::write_json(&args.output, binners, &args.append);
+            compress::compress(&args.folder, &args.append, &args.output);
         }
     }
 }

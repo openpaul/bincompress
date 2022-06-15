@@ -97,6 +97,30 @@ pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
     }
 }
 
+pub fn compress(folder: &Vec<String>, append: &bool, output: &str){
+    // create new binners object
+    // in the future this could be populated with saved results
+    let mut binners: Vec<Binner> = Vec::new();
+    // add all bins for each bin folder
+    for folder in folder.iter(){
+        let f =  Utf8PathBuf::from(folder);
+        let new_bins = bins_from_folder(&f).unwrap();
+        // check if we have the binner already saved, to not 
+        // have conflicts
+        let mut add = true;
+        for b in binners.iter(){
+            if &b.name == &new_bins.name {
+                add = false;
+                log::warn!("Binner already in output, not adding again");
+            }
+        }
+        if add {
+            binners.push(new_bins);
+        }
+    }
+    write_json(output, binners, append);
+}
+
 
 #[cfg(test)]
 mod tests {
