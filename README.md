@@ -83,6 +83,8 @@ Feel free to suggest massive changes if you want.
 - No validation of input data
 - Limited documentation
 - Not published on crates.io [Intentional, not ready for release]
+- ~~Use multithreading for compression/restore~~ [Working]
+  - Thread number should be exposed as a parameter
 - ~~The tool should produce JSON not CSV output~~ [Done, now using json]
 - ~~Does not retain order of contigs~~ [It does now]
 - ~~Allow Gzipped assemblies~~ [Works, but needs improvement as its very slow]
