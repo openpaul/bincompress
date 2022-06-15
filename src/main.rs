@@ -55,13 +55,13 @@ fn main() {
 
     // Execute subcommand
     match &cli.command {
-        Commands::Restore(args) => {
-            log::info!("Restoring compressed bins");
-            restore::decompress(&args.table, &args.output, &args.assembly);
-        }
         Commands::Compress(args) => {
             log::info!("Compressing bins");
             compress::compress(&args.folder, &args.append, &args.output);
+        }
+        Commands::Restore(args) => {
+            log::info!("Restoring compressed bins");
+            restore::decompress(&args.table, &args.output, &args.assembly);
         }
     }
 }
