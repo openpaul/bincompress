@@ -1,19 +1,18 @@
-use std::fs::File;
-use camino::{Utf8PathBuf};
-use std::io::{BufReader};
-use std::io::BufRead;
-use std::io::Error;
-use sha2::{Sha256, Digest};
+use camino::Utf8PathBuf;
 use serde::{Deserialize, Serialize};
-
+use sha2::{Digest, Sha256};
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Error;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Binner {
     pub name: String,
-    pub bins: Vec<Bin>
+    pub bins: Vec<Bin>,
 }
 
-#[derive(Debug, Deserialize, Serialize,Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Bin {
     pub name: String,
     pub binner: String,
@@ -22,20 +21,19 @@ pub struct Bin {
     pub width: usize,
 }
 
-
 /// Function to compute sha256 hash on a file
 ///
-/// Returns a result type with the hex digest of the 
+/// Returns a result type with the hex digest of the
 /// sha256 hash.
 ///
 /// Arguments:
 /// * `path`: UTF8PathBuf pointing to the input
-pub fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
+pub fn checksum256(path: &Utf8PathBuf) -> Result<String, Error> {
     let mut file = File::open(path)?;
     let mut sha256 = Sha256::new();
     std::io::copy(&mut file, &mut sha256)?;
     let hex: String = format!("{:X}", sha256.finalize());
-    return Ok(hex)
+    return Ok(hex);
 }
 
 /// Compute line-length (width) of FASTA file
@@ -46,17 +44,19 @@ pub fn checksum256(path: &Utf8PathBuf) -> Result<String,Error> {
 ///
 /// Arguments:
 /// * `path`: UTF8PathBuf pointing to the input
-pub fn get_width(path: &Utf8PathBuf) -> Result<usize,Error> {
+pub fn get_width(path: &Utf8PathBuf) -> Result<usize, Error> {
     let mut width = 0;
     let file = File::open(path)?;
     let r = BufReader::new(file);
     for line in r.lines() {
         let l = line?;
-        if l.starts_with(">"){
-            continue
+        if l.starts_with(">") {
+            continue;
         }
         let i = l.len();
-        if i > width {width = i}
+        if i > width {
+            width = i
+        }
     }
     Ok(width)
 }
@@ -64,8 +64,8 @@ pub fn get_width(path: &Utf8PathBuf) -> Result<usize,Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempdir::TempDir;
     use std::fs;
+    use tempdir::TempDir;
 
     const BIN_A: &str = ">Contig_1
 AGCTACGACATACG
@@ -79,32 +79,32 @@ ATGGTTTTTTTTTTTT
 ";
 
     #[test]
-    fn t_checksum256(){
+    fn t_checksum256() {
         let tmp_dir = TempDir::new("fasta").unwrap();
         let file_path = tmp_dir.path().join("binA.fasta");
-        fs::write(&file_path, BIN_A).expect("Unable to write file"); 
+        fs::write(&file_path, BIN_A).expect("Unable to write file");
 
         let cs = checksum256(&Utf8PathBuf::from_path_buf(file_path).unwrap())
-                .expect("Could not compute checksu:");
+            .expect("Could not compute checksu:");
         let expected = "667910636B177485DF8DB1C426A9FA2A243003FD44022E7BB485791EA1081041";
         assert_eq!(expected, cs);
     }
 
     #[test]
     #[should_panic]
-    fn t_checksum256_missing_file(){
+    fn t_checksum256_missing_file() {
         let file_path = Utf8PathBuf::from("missing.fasta");
         checksum256(&file_path).unwrap();
     }
 
     #[test]
-    fn t_get_width(){
+    fn t_get_width() {
         let tmp_dir = TempDir::new("fasta").unwrap();
         let file_path = tmp_dir.path().join("binA.fasta");
-        fs::write(&file_path, BIN_A).expect("Unable to write file"); 
+        fs::write(&file_path, BIN_A).expect("Unable to write file");
 
         let cs = get_width(&Utf8PathBuf::from_path_buf(file_path).unwrap())
-                .expect("Could not compute width");
+            .expect("Could not compute width");
         let expected = 20;
         assert_eq!(expected, cs);
     }

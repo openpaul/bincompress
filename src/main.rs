@@ -1,9 +1,9 @@
-use clap::{Parser, Subcommand,Args};
+use clap::{Args, Parser, Subcommand};
 //use log::{info, trace, warn};
+use camino::Utf8PathBuf;
 use simple_logger::SimpleLogger;
-use camino::{Utf8PathBuf};
-mod restore;
 mod compress;
+mod restore;
 
 mod lib;
 pub use lib::Binner;
@@ -45,7 +45,7 @@ struct Compress {
     output: String,
     #[clap(short, long)]
     /// Append to exsting table
-    append: bool
+    append: bool,
 }
 
 fn main() {
