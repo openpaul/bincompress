@@ -46,6 +46,8 @@ fn iterate_assembly(
     Ok(contigs)
 }
 
+/// Function to enable reading of compressed and
+/// uncompressed fasta files.
 fn assembly_wrapper(
     assembly: &str,
     bin: &Bin,
@@ -65,18 +67,17 @@ fn assembly_wrapper(
 
 fn restore_bin(bin: &Bin, binner: &String, assembly: &str, outfolder: &str) -> Result<(), ()> {
     log::info!("Restoring bins: {}", &bin.name);
-    // Load contigs from Assembly
+    // Load required contigs from assembly
     let contigs = assembly_wrapper(assembly, &bin).unwrap();
 
-    // now that all seq are in memory
+    // construct new output file
     let path = Utf8Path::new(outfolder).join(binner).join(&bin.name);
-
     let file = match File::create(&path) {
         Err(why) => panic!("couldn't open {}: {}", path, why),
         Ok(file) => file,
     };
 
-    // write to fasta
+    // write contigs to output file (fasta)
     let mut wrtr = fasta::Writer::new(file);
     for contig in bin.contigs.iter() {
         if contigs.contains_key(contig) {
@@ -85,7 +86,8 @@ fn restore_bin(bin: &Bin, binner: &String, assembly: &str, outfolder: &str) -> R
                 .expect("Could not write record");
         }
     }
-    drop(wrtr); // closing file before checksum computation
+    // closing file before checksum computation
+    drop(wrtr);
 
     let checksum = checksum256(&path).unwrap();
     if checksum != bin.checksum {
