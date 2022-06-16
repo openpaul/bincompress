@@ -91,6 +91,7 @@ fn writer(filename: &str, append: bool) -> Box<dyn Write> {
         },
     };
 
+    // Open and return correct writer based on extension
     if let Some("gz") = path.extension() {
         Box::new(BufWriter::with_capacity(
             buf,
@@ -109,8 +110,8 @@ pub fn compress(folder: &Vec<String>, append: &bool, output: &str) {
     for folder in folder.iter() {
         let f = Utf8PathBuf::from(folder);
         let new_bins = bins_from_folder(&f).unwrap();
-        // check if we have the binner already saved, to not
-        // have conflicts
+        // check if we have the binner already saved, 
+        // to not have conflicts
         let mut add = true;
         for b in binners.iter() {
             if &b.name == &new_bins.name {
