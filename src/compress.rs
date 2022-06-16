@@ -90,7 +90,7 @@ fn writer(filename: &str, append: bool) -> Box<dyn Write> {
         },
     };
 
-    if path.extension() == Some("gz") {
+    if let Some("gz") = path.extension() {
         // Error is here: Created file isn't gzip-compressed
         Box::new(BufWriter::with_capacity(
             128 * 1024,
