@@ -88,6 +88,7 @@ Feel free to suggest massive changes if you want.
 - No validation of input data
 - Limited documentation
 - Not published on crates.io [Intentional, not ready for release]
+- On compression arm, does not check if output folder exists before compression, nor creates output folder. Fails with error message after compression. [todo, easy]
 - ~~Use multithreading for compression/restore~~ [Working]
   - Thread number should be exposed as a parameter
 - ~~The tool should produce JSON not CSV output~~ [Done, now using json]
