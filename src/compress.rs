@@ -67,7 +67,7 @@ fn bins_from_folder(folder: &Utf8PathBuf) -> Result<Binner, Box<dyn Error>> {
     return Ok(binner);
 }
 
-pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool) {
+fn write_json(outfile: &str, values: Vec<Binner>, append: &bool) {
     let mut ap: bool = *append;
     if *append == true && Utf8Path::new(outfile).exists() == false {
         ap = false;
@@ -76,7 +76,7 @@ pub fn write_json(outfile: &str, values: Vec<Binner>, append: &bool) {
     serde_json::to_writer(writer_file, &values).unwrap();
 }
 
-pub fn writer(filename: &str, append: bool) -> Box<dyn Write> {
+fn writer(filename: &str, append: bool) -> Box<dyn Write> {
     let path = Utf8Path::new(filename);
     // open file object in append or new mode
     let file = match append {
