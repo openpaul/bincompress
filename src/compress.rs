@@ -77,6 +77,7 @@ fn write_json(outfile: &str, values: Vec<Binner>, append: &bool) {
 }
 
 fn writer(filename: &str, append: bool) -> Box<dyn Write> {
+    let buf = 1024 * 8;
     let path = Utf8Path::new(filename);
     // open file object in append or new mode
     let file = match append {
@@ -91,13 +92,12 @@ fn writer(filename: &str, append: bool) -> Box<dyn Write> {
     };
 
     if let Some("gz") = path.extension() {
-        // Error is here: Created file isn't gzip-compressed
         Box::new(BufWriter::with_capacity(
-            128 * 1024,
+            buf,
             write::GzEncoder::new(file, Compression::default()),
         ))
     } else {
-        Box::new(BufWriter::with_capacity(128 * 1024, file))
+        Box::new(BufWriter::with_capacity(buf, file))
     }
 }
 
